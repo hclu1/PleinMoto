@@ -3,6 +3,14 @@
 Toutes les modifications notables apportées à ce projet sont documentées dans ce fichier.
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.2.0] - 2026-10-28
+### Ajouté
+- Choix du mode de saisie kilométrique pour chaque plein :
+  - Mode **Compteur total (ODO)** : saisie du kilométrage global au tableau de bord avec calcul automatique des kilomètres parcourus.
+  - Mode **Trip 1 (Compteur partiel remis à 0)** : saisie directe des kilomètres parcourus avec ce plein, avec calcul automatique du nouveau kilométrage compteur global.
+- Indicateur de rappel visuel : « N'oubliez pas de remettre votre Trip 1 à zéro à la pompe ! ».
+- Mémorisation du mode de saisie préféré de l'utilisateur.
+
 ## [1.1.0] - 2026-10-28
 ### Ajouté
 - Sélecteur de mode d'affichage « PC / Téléphone » : bascule instantanée entre une simulation iPhone (cadre smartphone réaliste, Dynamic Island, ergonomie mobile) et le mode Bureau PC (affichage étendu plein écran fluide).

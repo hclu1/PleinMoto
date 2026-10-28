@@ -18,6 +18,8 @@ import {
   AlertTriangle,
   TrendingUp,
   Flame,
+  RotateCcw,
+  Check,
 } from 'lucide-react';
 
 interface FuelPageProps {
@@ -48,8 +50,10 @@ export const FuelPage: React.FC<FuelPageProps> = ({
 
   // Form states
   const [date, setDate] = useState<string>(getTodayDateString());
+  const [inputMode, setInputMode] = useState<'odometer' | 'trip'>('trip'); // Default to trip 1 or odometer
   const [currentMileage, setCurrentMileage] = useState<string>('');
   const [distance, setDistance] = useState<string>('');
+  const [tripResetChecked, setTripResetChecked] = useState<boolean>(true);
   const [liters, setLiters] = useState<string>('');
   const [totalPrice, setTotalPrice] = useState<string>('');
   const [brand, setBrand] = useState<string>('TotalEnergies');
@@ -100,13 +104,23 @@ export const FuelPage: React.FC<FuelPageProps> = ({
   // Determine last mileage for auto-distance calculation
   const latestMileage = fuels.length > 0 ? fuels[0].currentMileage : activeMoto.initialMileage;
 
-  // Auto calculate distance when currentMileage changes
+  // Auto calculate distance when currentMileage changes (Mode Compteur ODO)
   const handleCurrentMileageChange = (val: string) => {
     setCurrentMileage(val);
     const parsedCurrent = parseFloat(val);
-    if (!isNaN(parsedCurrent) && parsedCurrent > latestMileage) {
+    if (!isNaN(parsedCurrent) && parsedCurrent >= latestMileage) {
       const calculatedDistance = (parsedCurrent - latestMileage).toFixed(1);
       setDistance(calculatedDistance);
+    }
+  };
+
+  // Auto calculate currentMileage when Trip 1 changes (Mode Trip 1 partiel)
+  const handleTripChange = (val: string) => {
+    setDistance(val);
+    const parsedTrip = parseFloat(val);
+    if (!isNaN(parsedTrip) && parsedTrip >= 0) {
+      const calculatedMileage = (latestMileage + parsedTrip).toFixed(0);
+      setCurrentMileage(calculatedMileage);
     }
   };
 
@@ -118,8 +132,10 @@ export const FuelPage: React.FC<FuelPageProps> = ({
 
   const resetForm = () => {
     setDate(getTodayDateString());
+    setInputMode('trip');
     setCurrentMileage('');
     setDistance('');
+    setTripResetChecked(true);
     setLiters('');
     setTotalPrice('');
     setBrand(settings.brands[0] || 'TotalEnergies');
@@ -138,8 +154,10 @@ export const FuelPage: React.FC<FuelPageProps> = ({
   const handleEdit = (entry: FuelEntry) => {
     setEditingEntry(entry);
     setDate(entry.date);
+    setInputMode(entry.distanceInputMode || 'odometer');
     setCurrentMileage(entry.currentMileage.toString());
     setDistance(entry.distance.toString());
+    setTripResetChecked(true);
     setLiters(entry.liters.toString());
     setTotalPrice(entry.totalPrice.toString());
     setBrand(entry.brand);
@@ -209,6 +227,7 @@ export const FuelPage: React.FC<FuelPageProps> = ({
         date,
         currentMileage: curKm,
         distance: dist,
+        distanceInputMode: inputMode,
         liters: lit,
         totalPrice: tot,
         pricePerLiter: computedPpl,
@@ -226,6 +245,7 @@ export const FuelPage: React.FC<FuelPageProps> = ({
         date,
         currentMileage: curKm,
         distance: dist,
+        distanceInputMode: inputMode,
         liters: lit,
         totalPrice: tot,
         pricePerLiter: computedPpl,
@@ -504,7 +524,14 @@ export const FuelPage: React.FC<FuelPageProps> = ({
                   <div className="text-[11px] text-zinc-400 flex items-center gap-2">
                     <span>Compteur : {entry.currentMileage.toLocaleString('fr-FR')} km</span>
                     <span>•</span>
-                    <span className="text-zinc-300 font-semibold">+{entry.distance} km</span>
+                    <span className="text-zinc-200 font-semibold flex items-center gap-1">
+                      {entry.distanceInputMode === 'trip' && (
+                        <span className="text-[10px] bg-zinc-800 text-amber-400 px-1.5 py-0.2 rounded border border-amber-500/30">
+                          Trip 1
+                        </span>
+                      )}
+                      +{entry.distance} km
+                    </span>
                   </div>
 
                   {entry.notes && (
@@ -604,51 +631,139 @@ export const FuelPage: React.FC<FuelPageProps> = ({
                 )}
               </div>
 
-              {/* Kilométrage compteur & Distance */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1">
-                    Km au compteur
-                  </label>
-                  <input
-                    type="number"
-                    inputMode="numeric"
-                    placeholder={`Ex: ${latestMileage + 250}`}
-                    value={currentMileage}
-                    onChange={(e) => handleCurrentMileageChange(e.target.value)}
-                    className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-base font-bold text-zinc-100 focus:outline-none focus:border-amber-500"
-                    required
-                  />
-                  <span className="text-[10px] text-zinc-500 mt-0.5 block">
-                    Dernier : {latestMileage} km
-                  </span>
-                  {errors.currentMileage && (
-                    <p className="text-xs text-rose-400 mt-1">{errors.currentMileage}</p>
-                  )}
-                </div>
+              {/* Choix du mode de relevé kilométrique (Trip 1 ou Compteur Total) */}
+              <div className="bg-zinc-800/80 p-1.5 rounded-2xl border border-zinc-700/80">
+                <span className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider px-2 pt-1 pb-1.5">
+                  Comment relevez-vous vos kilomètres ?
+                </span>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setInputMode('trip')}
+                    className={`flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs font-bold transition-all ${
+                      inputMode === 'trip'
+                        ? 'bg-amber-500 text-zinc-950 shadow-md shadow-amber-500/20'
+                        : 'bg-zinc-800/90 text-zinc-300 hover:bg-zinc-700 border border-zinc-700/60'
+                    }`}
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Trip 1 (Remis à 0)</span>
+                  </button>
 
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1">
-                    Km depuis dernier plein
-                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setInputMode('odometer')}
+                    className={`flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs font-bold transition-all ${
+                      inputMode === 'odometer'
+                        ? 'bg-amber-500 text-zinc-950 shadow-md shadow-amber-500/20'
+                        : 'bg-zinc-800/90 text-zinc-300 hover:bg-zinc-700 border border-zinc-700/60'
+                    }`}
+                  >
+                    <Gauge className="w-3.5 h-3.5" />
+                    <span>Compteur total (ODO)</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Saisie adaptée selon le mode choisi */}
+              {inputMode === 'trip' ? (
+                /* MODE TRIP 1 : Saisie directe du trip partiel */
+                <div className="space-y-2 bg-amber-500/5 p-3.5 rounded-2xl border border-amber-500/20">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      Kilomètres affichés sur le Trip 1
+                    </label>
+                    <span className="text-[10px] text-zinc-400 font-medium">
+                      Depuis le dernier plein
+                    </span>
+                  </div>
+
                   <input
                     type="number"
                     step="0.1"
                     inputMode="decimal"
-                    placeholder="Auto-calculé"
+                    placeholder="Ex: 285.4"
                     value={distance}
-                    onChange={(e) => setDistance(e.target.value)}
-                    className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-base font-bold text-amber-400 focus:outline-none focus:border-amber-500"
+                    onChange={(e) => handleTripChange(e.target.value)}
+                    className="w-full bg-zinc-800 border-2 border-amber-500/60 rounded-xl px-3.5 py-3 text-xl font-black text-amber-400 focus:outline-none focus:border-amber-400"
+                    autoFocus
                     required
                   />
-                  <span className="text-[10px] text-zinc-500 mt-0.5 block">
-                    Calculé ou manuel
-                  </span>
+
+                  {/* Compteur total calculé automatiquement */}
+                  <div className="flex items-center justify-between text-xs text-zinc-300 pt-1">
+                    <span className="text-zinc-400">Compteur global déduit :</span>
+                    <span className="font-bold text-zinc-200">
+                      {currentMileage ? `${parseFloat(currentMileage).toLocaleString('fr-FR')} km` : `${latestMileage} km`}
+                    </span>
+                  </div>
+
+                  {/* Petit rappel pour le motard */}
+                  <label className="flex items-center gap-2 cursor-pointer pt-2 border-t border-zinc-800/80">
+                    <input
+                      type="checkbox"
+                      checked={tripResetChecked}
+                      onChange={(e) => setTripResetChecked(e.target.checked)}
+                      className="w-4 h-4 rounded text-amber-500 focus:ring-0"
+                    />
+                    <span className="text-xs text-zinc-300 font-medium flex items-center gap-1">
+                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      Pensez à remettre votre Trip 1 à zéro à la pompe !
+                    </span>
+                  </label>
+
                   {errors.distance && (
-                    <p className="text-xs text-rose-400 mt-1">{errors.distance}</p>
+                    <p className="text-xs text-rose-400">{errors.distance}</p>
                   )}
                 </div>
-              </div>
+              ) : (
+                /* MODE COMPTEUR TOTAL ODO : Saisie classique */
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1">
+                      Km au compteur global
+                    </label>
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      placeholder={`Ex: ${latestMileage + 250}`}
+                      value={currentMileage}
+                      onChange={(e) => handleCurrentMileageChange(e.target.value)}
+                      className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-base font-bold text-zinc-100 focus:outline-none focus:border-amber-500"
+                      required
+                    />
+                    <span className="text-[10px] text-zinc-500 mt-0.5 block">
+                      Dernier : {latestMileage} km
+                    </span>
+                    {errors.currentMileage && (
+                      <p className="text-xs text-rose-400 mt-1">{errors.currentMileage}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1">
+                      Km calculés
+                    </label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      inputMode="decimal"
+                      placeholder="Auto-calculé"
+                      value={distance}
+                      onChange={(e) => setDistance(e.target.value)}
+                      className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-base font-bold text-amber-400 focus:outline-none focus:border-amber-500"
+                      required
+                    />
+                    <span className="text-[10px] text-zinc-500 mt-0.5 block">
+                      Distance de ce plein
+                    </span>
+                    {errors.distance && (
+                      <p className="text-xs text-rose-400 mt-1">{errors.distance}</p>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Litres ajoutés & Prix total */}
               <div className="grid grid-cols-2 gap-3">

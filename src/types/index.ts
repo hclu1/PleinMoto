@@ -24,6 +24,7 @@ export interface FuelEntry {
   date: string; // YYYY-MM-DD
   currentMileage: number; // km compteur
   distance: number; // km parcourus depuis le dernier plein
+  distanceInputMode?: 'odometer' | 'trip'; // Choix saisie compteur total ou Trip 1
   liters: number;
   totalPrice: number;
   pricePerLiter: number;
