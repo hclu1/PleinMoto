@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+    <linearGradient id="darkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#18181b" />
+      <stop offset="100%" stop-color="#09090b" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background rounded squircle iOS style -->
+  <rect width="512" height="512" rx="115" fill="url(#darkGrad)" />
+  <rect x="16" y="16" width="480" height="480" rx="100" fill="none" stroke="#27272a" stroke-width="6" />
+
+  <!-- Amber glowing badge center -->
+  <circle cx="256" cy="256" r="170" fill="url(#bgGrad)" opacity="0.12" />
+
+  <!-- Motorcycle & Fuel Pump Stylized Icon -->
+  <g transform="translate(100, 110) scale(0.62)" stroke="#f59e0b" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <!-- Wheel Left -->
+    <circle cx="90" cy="380" r="70" />
+    <circle cx="90" cy="380" r="25" fill="#f59e0b" />
+    <!-- Wheel Right -->
+    <circle cx="410" cy="380" r="70" />
+    <circle cx="410" cy="380" r="25" fill="#f59e0b" />
+    <!-- Chassis / Frame -->
+    <path d="M90 380 L200 380 L270 260 L180 260 Z" />
+    <path d="M200 380 L290 190 L390 190" />
+    <path d="M290 190 L410 380" />
+    <path d="M180 260 L240 150 L280 150" />
+    <path d="M230 150 L210 120 L270 120" />
+    <!-- Gas Tank Curve -->
+    <path d="M240 180 Q270 150 330 180 Q340 210 290 220 Z" fill="#f59e0b" opacity="0.3" />
+  </g>
+
+  <!-- Small Fuel Droplet Accent -->
+  <path d="M370 140 C370 140 405 185 405 205 C405 224 389 240 370 240 C351 240 335 224 335 205 C335 185 370 140 370 140 Z" fill="#f59e0b" />
+</svg>
