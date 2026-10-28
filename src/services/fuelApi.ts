@@ -44,8 +44,8 @@ export async function fetchNearbyStations(
 ): Promise<StationData[]> {
   const { latitude, longitude, radiusKm = 15 } = options;
 
-  // URL Open Data du Ministère de l'Économie (flux instantané)
-  const endpoint = `https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-carburants-fichier-instantane-explore/records`;
+  // URL Open Data du Ministère de l'Économie (flux instantané v2 officiel)
+  const endpoint = `https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records`;
   const params = new URLSearchParams({
     limit: '60',
     where: `within_distance(geom, geom'POINT(${longitude} ${latitude})', ${radiusKm}km)`,

@@ -39,10 +39,12 @@ export const StationsPage: React.FC<StationsPageProps> = ({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [stations, setStations] = useState<StationData[]>([]);
   const [hasRequestedGeo, setHasRequestedGeo] = useState<boolean>(false);
+  const [selectedLocationLabel, setSelectedLocationLabel] = useState<string>('Saint-Germain-en-Laye (78100)');
 
   // Quick preset locations for testing/desktop/offline simulation
   const PRESET_LOCATIONS = [
     { name: 'Ma position GPS réelle', lat: null, lon: null },
+    { name: 'Saint-Germain-en-Laye (78100)', lat: 48.8989, lon: 2.0938 },
     { name: 'Paris (Porte de Bercy)', lat: 48.829, lon: 2.383 },
     { name: 'Lyon (Centre)', lat: 45.764, lon: 4.835 },
     { name: 'Marseille (Vieux-Port)', lat: 43.296, lon: 5.369 },
@@ -53,6 +55,7 @@ export const StationsPage: React.FC<StationsPageProps> = ({
     setHasRequestedGeo(true);
     setIsLoading(true);
     setErrorMsg(null);
+    setSelectedLocationLabel('Position GPS réelle');
 
     if (!navigator.geolocation) {
       setErrorMsg('La géolocalisation n’est pas supportée par votre appareil.');
@@ -70,7 +73,7 @@ export const StationsPage: React.FC<StationsPageProps> = ({
         setIsLoading(false);
         if (err.code === err.PERMISSION_DENIED) {
           setErrorMsg(
-            'Autorisation de géolocalisation refusée. Vous pouvez utiliser une position test ci-dessous pour explorer les stations Open Data.'
+            'Autorisation de géolocalisation refusée sur cet appareil. Choisissez Saint-Germain-en-Laye (78100) ou une autre ville ci-dessous pour afficher les stations officielles.'
           );
         } else {
           setErrorMsg(`Impossible d’obtenir votre position GPS (${err.message}).`);
@@ -80,8 +83,9 @@ export const StationsPage: React.FC<StationsPageProps> = ({
     );
   };
 
-  const handleSelectPreset = (lat: number, lon: number) => {
+  const handleSelectPreset = (name: string, lat: number, lon: number) => {
     setHasRequestedGeo(true);
+    setSelectedLocationLabel(name);
     setCoords({ lat, lon });
     loadStations(lat, lon, radiusKm);
   };
@@ -193,14 +197,18 @@ export const StationsPage: React.FC<StationsPageProps> = ({
           {/* Quick presets for testing */}
           <div className="pt-3 border-t border-zinc-800/80">
             <span className="text-[11px] text-zinc-500 block mb-2 font-medium">
-              Ou tester immédiatement avec une ville d'exemple :
+              Ou choisir directement une commune :
             </span>
             <div className="flex flex-wrap justify-center gap-2">
               {PRESET_LOCATIONS.filter((p) => p.lat !== null).map((p) => (
                 <button
                   key={p.name}
-                  onClick={() => handleSelectPreset(p.lat!, p.lon!)}
-                  className="px-2.5 py-1 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-semibold border border-zinc-700"
+                  onClick={() => handleSelectPreset(p.name, p.lat!, p.lon!)}
+                  className={`px-2.5 py-1 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+                    p.name.includes('Saint-Germain')
+                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 hover:bg-amber-500/30'
+                      : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700'
+                  }`}
                 >
                   {p.name}
                 </button>
@@ -213,6 +221,38 @@ export const StationsPage: React.FC<StationsPageProps> = ({
       {/* Search and Filters Controls (Active once requested) */}
       {hasRequestedGeo && (
         <div className="bg-zinc-900/90 border border-zinc-800 rounded-2xl p-4 space-y-3 shadow-sm">
+          {/* Active location indicator & Quick Switcher */}
+          <div className="p-2.5 bg-zinc-800/70 rounded-xl border border-zinc-700/70 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-2 text-xs min-w-0">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0 animate-pulse"></span>
+              <span className="text-zinc-400 shrink-0">Secteur :</span>
+              <span className="font-bold text-zinc-100 truncate">{selectedLocationLabel}</span>
+            </div>
+
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+              {PRESET_LOCATIONS.filter((p) => p.lat !== null).map((p) => (
+                <button
+                  key={p.name}
+                  onClick={() => handleSelectPreset(p.name, p.lat!, p.lon!)}
+                  className={`px-2 py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap border transition-colors cursor-pointer ${
+                    selectedLocationLabel === p.name
+                      ? 'bg-amber-500 text-zinc-950 border-amber-400 font-bold'
+                      : 'bg-zinc-800 text-zinc-300 hover:text-white border-zinc-700'
+                  }`}
+                >
+                  {p.name.includes('Saint-Germain') ? 'Saint-Germain 78100' : p.name.split(' (')[0]}
+                </button>
+              ))}
+              <button
+                onClick={requestGeolocation}
+                title="Utiliser ma position GPS réelle"
+                className="px-2 py-1 rounded-lg text-[11px] font-semibold text-amber-400 bg-zinc-800 hover:bg-zinc-700 border border-amber-500/40 whitespace-nowrap flex items-center gap-1 cursor-pointer"
+              >
+                <NavIcon className="w-3 h-3" /> GPS
+              </button>
+            </div>
+          </div>
+
           {/* Fuel selection bar (SP98 default) */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
@@ -337,13 +377,46 @@ export const StationsPage: React.FC<StationsPageProps> = ({
 
       {/* Error state */}
       {errorMsg && !isLoading && (
-        <div className="p-4 bg-rose-500/10 border border-rose-500/30 rounded-2xl text-xs text-rose-300 flex items-start gap-2.5">
-          <AlertCircle className="w-4 h-4 shrink-0 text-rose-400 mt-0.5" />
-          <div>
-            <p className="font-semibold">{errorMsg}</p>
-            <p className="text-[11px] text-rose-400/80 mt-1">
-              Les autres fonctionnalités de l'application (pleins, entretien, coût de revient) restent 100% opérationnelles hors ligne.
-            </p>
+        <div className="space-y-3">
+          <div className="p-4 bg-rose-500/10 border border-rose-500/30 rounded-2xl text-xs text-rose-300 flex items-start gap-2.5">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-400 mt-0.5" />
+            <div>
+              <p className="font-semibold">{errorMsg}</p>
+              <p className="text-[11px] text-rose-400/80 mt-1">
+                Sur iPhone en Wi-Fi / réseau local HTTP, le GPS est restreint par Apple. Sélectionnez directement une ville ci-dessous pour voir les stations.
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-zinc-900/90 border border-zinc-800 rounded-2xl p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <Compass className="w-4 h-4 text-amber-400" />
+              <span className="text-xs font-bold text-zinc-200">
+                Sélectionner un secteur (données officielles réelles) :
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {PRESET_LOCATIONS.filter((p) => p.lat !== null).map((p) => (
+                <button
+                  key={p.name}
+                  onClick={() => handleSelectPreset(p.name, p.lat!, p.lon!)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+                    p.name.includes('Saint-Germain')
+                      ? 'bg-amber-500 text-zinc-950 border-amber-400 font-bold shadow-md shadow-amber-500/20'
+                      : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700'
+                  }`}
+                >
+                  {p.name}
+                </button>
+              ))}
+              <button
+                onClick={requestGeolocation}
+                className="px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-amber-400 text-xs font-semibold border border-amber-500/40 flex items-center gap-1.5 cursor-pointer"
+              >
+                <NavIcon className="w-3.5 h-3.5" />
+                Réessayer le GPS
+              </button>
+            </div>
           </div>
         </div>
       )}

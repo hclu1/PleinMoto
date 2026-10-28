@@ -3,6 +3,13 @@
 Toutes les modifications notables apportées à ce projet sont documentées dans ce fichier.
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.3.0] - 2026-10-28
+### Ajouté
+- Ajout du secteur prédéfini **Saint-Germain-en-Laye (78100)** avec coordonnées GPS officielles (48.8989° N, 2.0938° E) pour explorer immédiatement les stations locales et limitrophes (Chambourcy, Houilles, Le Chesnay, etc.).
+- Sélecteur rapide de commune accessible en continu dans la barre de recherche et les filtres de la page Stations.
+- Affichage automatique des communes suggérées en cas de refus ou d'absence de géolocalisation GPS (notamment sur iPhone / Safari en local).
+- Mise à jour de la passerelle Open Data gouvernementale vers le jeu de données officiel en temps réel `prix-des-carburants-en-france-flux-instantane-v2`.
+
 ## [1.2.0] - 2026-10-28
 ### Ajouté
 - Choix du mode de saisie kilométrique pour chaque plein :
