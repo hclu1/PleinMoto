@@ -1,4 +1,5 @@
 import type { Moto, FuelEntry, MaintenanceEntry, ExpenseEntry, AppSettings } from '../types';
+import { PersistentStorage } from './persistentStorage';
 
 const STORAGE_KEYS = {
   MOTOS: 'mc_motos',
@@ -191,6 +192,14 @@ export const DEMO_EXPENSES: ExpenseEntry[] = [
 ];
 
 export class StorageService {
+  /**
+   * Initialisation et auto-restauration de la persistance multi-couches
+   * (Capacitor Native iOS NSUserDefaults + IndexedDB + WebKit Persistent Storage)
+   */
+  static async init(): Promise<boolean> {
+    return await PersistentStorage.initializeAndRestore();
+  }
+
   static getSettings(): AppSettings {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.SETTINGS);
@@ -204,7 +213,8 @@ export class StorageService {
   }
 
   static saveSettings(settings: AppSettings): void {
-    localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+    const val = JSON.stringify(settings);
+    PersistentStorage.setItem(STORAGE_KEYS.SETTINGS, val);
   }
 
   static getMotos(): Moto[] {
@@ -225,7 +235,8 @@ export class StorageService {
   }
 
   static saveMotos(motos: Moto[]): void {
-    localStorage.setItem(STORAGE_KEYS.MOTOS, JSON.stringify(motos));
+    const val = JSON.stringify(motos);
+    PersistentStorage.setItem(STORAGE_KEYS.MOTOS, val);
   }
 
   static getActiveMoto(): Moto {
@@ -299,7 +310,8 @@ export class StorageService {
   }
 
   static saveFuelEntries(entries: FuelEntry[]): void {
-    localStorage.setItem(STORAGE_KEYS.FUELS, JSON.stringify(entries));
+    const val = JSON.stringify(entries);
+    PersistentStorage.setItem(STORAGE_KEYS.FUELS, val);
   }
 
   static addFuelEntry(entry: FuelEntry): void {
@@ -335,7 +347,8 @@ export class StorageService {
   }
 
   static saveMaintenanceEntries(entries: MaintenanceEntry[]): void {
-    localStorage.setItem(STORAGE_KEYS.MAINTENANCE, JSON.stringify(entries));
+    const val = JSON.stringify(entries);
+    PersistentStorage.setItem(STORAGE_KEYS.MAINTENANCE, val);
   }
 
   static addMaintenanceEntry(entry: MaintenanceEntry): void {
@@ -371,7 +384,8 @@ export class StorageService {
   }
 
   static saveExpenseEntries(entries: ExpenseEntry[]): void {
-    localStorage.setItem(STORAGE_KEYS.EXPENSES, JSON.stringify(entries));
+    const val = JSON.stringify(entries);
+    PersistentStorage.setItem(STORAGE_KEYS.EXPENSES, val);
   }
 
   static addExpenseEntry(entry: ExpenseEntry): void {

@@ -14,6 +14,7 @@ import {
   Sparkles,
   Smartphone,
   X,
+  ShieldCheck,
 } from 'lucide-react';
 
 interface MotoSettingsPageProps {
@@ -549,6 +550,19 @@ export const MotoSettingsPage: React.FC<MotoSettingsPageProps> = ({
           >
             {settings.isDemoMode ? 'Désactiver démo' : 'Activer démo'}
           </button>
+        </div>
+
+        {/* Protection & Persistance Status */}
+        <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-start gap-3">
+          <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+          <div className="text-xs">
+            <div className="font-bold text-emerald-300">
+              Protection permanente anti-perte active
+            </div>
+            <div className="text-zinc-400 text-[11px] mt-0.5 leading-relaxed">
+              Vos pleins et entretiens sont synchronisés dans le stockage persistant natif de l'appareil (NSUserDefaults iOS + IndexedDB). Votre historique est automatiquement conservé et restauré lors des mises à jour de l'application.
+            </div>
+          </div>
         </div>
 
         {/* Export / Import buttons */}

@@ -3,6 +3,15 @@
 Toutes les modifications notables apportées à ce projet sont documentées dans ce fichier.
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.4.0] - 2026-10-28
+### Ajouté
+- Persistance multi-niveaux pour garantir la conservation intégrale de l'historique (pleins, entretiens, dépenses, motos) lors des mises à jour de l'application sur iPhone.
+- Intégration de `@capacitor/preferences` pour la sauvegarde permanente dans `NSUserDefaults` (stockage natif iOS inaltérable par les mises à jour et nettoyages du système).
+- Réplication miroir automatique dans IndexedDB (`MotoCarburantDB`).
+- Activation de la persistance WebKit (`navigator.storage.persist()`) pour empêcher Safari d'expulser les données locales.
+- Moteur d'auto-restauration et de réconciliation au démarrage : détection automatique si le `localStorage` a été réinitialisé et restauration immédiate des données historiques.
+- Snapshot de sauvegarde automatique locale (`mc_autobackup_latest`) et badge de statut de protection dans les réglages.
+
 ## [1.3.0] - 2026-10-28
 ### Ajouté
 - Ajout du secteur prédéfini **Saint-Germain-en-Laye (78100)** avec coordonnées GPS officielles (48.8989° N, 2.0938° E) pour explorer immédiatement les stations locales et limitrophes (Chambourcy, Houilles, Le Chesnay, etc.).

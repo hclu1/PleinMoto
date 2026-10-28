@@ -52,6 +52,12 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     refreshAll();
+    // Activation de la persistance multi-niveaux et restauration automatique post-mise à jour
+    StorageService.init().then((restored) => {
+      if (restored) {
+        refreshAll();
+      }
+    });
   }, []);
 
   useEffect(() => {
